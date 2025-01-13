@@ -76,7 +76,7 @@ Select *, totalEmission/Population as GlobalCO2byPopulation
 From EmiPop
 order by 2
 
--- Using Temp Table to perform Calculation on Partition By in previous query
+-- Using Temp Table to find Global CO2 vs global Population from 1951 to 2020
 -- skill used: Temp Table
 
 DROP Table if exists #totEmi
