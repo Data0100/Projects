@@ -1,12 +1,19 @@
+/*
+Exploring CO2 Data  
+*/
+
 Select *
 From CO2portfolio.dbo.CO2emissionbycountries
 
+-- Select Data that interest us
 
 Select Country, Years, CO2emission,Area, Population2022
 From CO2portfolio..CO2emissionbycountries
 Where CO2emission is not null 
 order by 1,2
 
+-- CO2 Emission vs Area
+-- Shows CO2 by area for the UK
 
 Select Country, Years, CO2emission,Area, Population2022, (CO2emission/Area) as CO2bykm2
 From CO2portfolio..CO2emissionbycountries
@@ -15,7 +22,7 @@ and Area is not null
 order by 1,2
 
 
--- Countries with Highest CO2emission compared to Population
+-- Countries with Highest CO2 emission compared to the population
 
 Select Country,Population2022 , MAX(CO2emission) as HighestCO2 
 ,Max((CO2emission/Population2022))*100 as CO2byPercentPopulation
@@ -26,22 +33,20 @@ order by CO2byPercentPopulation desc
 
 
 
--- GLOBAL NUMBERS
+-- Global CO2 emission
 
 Select SUM(CO2emission) as totalEmission, Years
---, SUM(totalEmission)/SUM(totalPopulation)*100 as GlobalCO2byPopulationInPercent
 From CO2portfolio..CO2emissionbycountries
 where CO2emission is not null 
 Group By Years
 order by 2
 
--- Total Population vs CO2 from 1951 to 2020
---Global CO2 by Population In Percent from 1951 to 2020
+-- Global Population  from 1951 to 2020
+-- Global CO2 vs global Population from 1951 to 2020
+-- skill used: Join
 
 Select SUM(emi.CO2emission) as totalEmission, emi.Years, pop.Population
 , SUM(emi.CO2emission)/pop.Population as GlobalCO2byPopulation
---, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
---, (RollingPeopleVaccinated/population)*100
 From CO2portfolio..CO2emissionbycountries emi
 Join CO2portfolio..WorldPopulationGrowth pop
 	On emi.Years = pop.Years
@@ -54,9 +59,9 @@ Select Country, Years
 , SUM(CO2emission) OVER (Partition by Country Order by Country, Years) as CummulativeCO2byCountry
 From CO2portfolio..CO2emissionbycountries
 where CO2emission is not null 
---order by 1,2
 
--- Using CTE to perform Calculation on Partition By in previous query
+-- Using CTE to find Global CO2 vs global Population from 1951 to 2020
+-- skill used: CTE
 
 With EmiPop (totalEmission, Years, Population)
 as
@@ -72,6 +77,7 @@ From EmiPop
 order by 2
 
 -- Using Temp Table to perform Calculation on Partition By in previous query
+-- skill used: Temp Table
 
 DROP Table if exists #totEmi
 Create Table #totEmi
@@ -93,12 +99,11 @@ From #totEmi
 
 
 -- Creating View to store data for later visualizations
+-- Skill used: Creating View
 
 Create View GlobalCO2byPop as
 Select SUM(emi.CO2emission) as totalEmission, emi.Years, pop.Population
 , SUM(emi.CO2emission)/pop.Population as GlobalCO2byPopulation
---, SUM(CONVERT(int,vac.new_vaccinations)) OVER (Partition by dea.Location Order by dea.location, dea.Date) as RollingPeopleVaccinated
---, (RollingPeopleVaccinated/population)*100
 From CO2portfolio..CO2emissionbycountries emi
 Join CO2portfolio..WorldPopulationGrowth pop
 	On emi.Years = pop.Years
